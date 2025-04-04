@@ -1,0 +1,134 @@
+using ConstantTalk.Server.Data;
+using ConstantTalk.Server.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+
+namespace ConstantTalk.Server.Controllers
+{
+    [ApiController]
+    [Route("api/admin")]
+    //[Authorize(Roles = "admin")]
+    public class AdminController : ControllerBase
+    {
+        private readonly ApplicationDbContext _context;
+
+        public AdminController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsers()
+        {
+            var users = await _context.Subscribers
+                .Select(s => new
+                {
+                    s.Id,
+                    s.Name,
+                    s.Email,
+                    s.PhoneNumber,
+                    s.IsBlocked
+                })
+                .ToListAsync();
+
+            return Ok(users);
+        }
+
+        [HttpGet("unpaid-bills")]
+        public async Task<IActionResult> GetUnpaidBills()
+        {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+            var unpaidBills = await _context.Bills
+                .Where(b => !b.IsPaid)
+                .Include(b => b.Subscriber)
+                .Select(static b => new
+                {
+                    b.Id,
+                    b.Amount,
+                    b.Description,
+                    Subscriber = new
+                    {
+                        b.Subscriber.Id,
+                        b.Subscriber.Name,
+                        b.Subscriber.Email
+                    }
+                })
+                .ToListAsync();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+
+            return Ok(unpaidBills);
+        }
+
+        [HttpPost("block/{id}")]
+        public async Task<IActionResult> BlockUser(Guid id)
+        {
+            var user = await _context.Subscribers.FindAsync(id);
+            if (user == null) return NotFound();
+
+            user.IsBlocked = true;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpPost("unblock/{id}")]
+        public async Task<IActionResult> UnblockUser(Guid id)
+        {
+            var user = await _context.Subscribers.FindAsync(id);
+            if (user == null) return NotFound();
+
+            user.IsBlocked = false;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        public class AddUserRequest
+        {
+            public string Name { get; set; } = string.Empty;
+            public string Email { get; set; } = string.Empty;
+            public string PhoneNumber { get; set; } = string.Empty;
+        }
+
+        [HttpPost("add-user")]
+        public async Task<IActionResult> AddUser([FromBody] AddUserRequest request)
+        {
+            var user = new Subscriber
+            {
+                Name = request.Name,
+                Email = request.Email,
+                PhoneNumber = request.PhoneNumber
+            };
+
+            _context.Subscribers.Add(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { user.Id });
+        }
+
+        public class AddServiceRequest
+        {
+            public string Name { get; set; } = string.Empty;
+            public decimal Price { get; set; }
+            public string Description { get; set; } = string.Empty;
+        }
+
+        [HttpPost("add-service")]
+        public async Task<IActionResult> AddService([FromBody] AddServiceRequest request)
+        {
+            var service = new Service
+            {
+                Name = request.Name,
+                Price = request.Price,
+                Description = request.Description
+            };
+
+            _context.Services.Add(service);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { service.Id });
+        }
+    }
+}

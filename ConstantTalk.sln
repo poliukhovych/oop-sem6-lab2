@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConstantTalk.Server", "ConstantTalk.Server\ConstantTalk.Server.csproj", "{EC32F28C-1A56-D1DD-0596-E6E3394B0CC5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EC32F28C-1A56-D1DD-0596-E6E3394B0CC5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC32F28C-1A56-D1DD-0596-E6E3394B0CC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC32F28C-1A56-D1DD-0596-E6E3394B0CC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC32F28C-1A56-D1DD-0596-E6E3394B0CC5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D3E0DFC2-B366-4E23-AA2A-8A28776BFBB3}
+	EndGlobalSection
+EndGlobal
