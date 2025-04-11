@@ -9,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 var auth0Settings = builder.Configuration.GetSection("Auth0").Get<Auth0Settings>();
 
+var requestLoggingSection = builder.Configuration.GetSection("RequestLogging");
+builder.Services.Configure<RequestLoggingSettings>(requestLoggingSection);
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
