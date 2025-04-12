@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Container, Row, Col, Card, Button, ListGroup, Badge } from "react-bootstrap";
+import { toast } from "react-toastify";
 import { useAuth0 } from "@auth0/auth0-react";
 import {
   getAvailableServices,
@@ -34,9 +35,15 @@ function UserDashboard() {
     try {
       const accessToken = await getAccessTokenSilently();
       await addService(serviceId, accessToken);
+      toast.success("Service activated successfully!");
       setMyServices(await getMyServices(accessToken));
       setBills(await getMyBills(accessToken));
     } catch (error) {
+      if (error.message.includes("blocked")) {
+        toast.error("You are blocked and cannot add new services.");
+      } else {
+        toast.error("Failed to activate service.");
+      }
       console.error("Error when activating service:", error);
     }
   };

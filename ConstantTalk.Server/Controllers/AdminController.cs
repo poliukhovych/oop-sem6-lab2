@@ -1,5 +1,6 @@
 using ConstantTalk.Server.Data;
 using ConstantTalk.Server.Models;
+using ConstantTalk.Server.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -85,13 +86,6 @@ namespace ConstantTalk.Server.Controllers
             return NoContent();
         }
 
-        public class AddUserRequest
-        {
-            public string Name { get; set; } = string.Empty;
-            public string Email { get; set; } = string.Empty;
-            public string PhoneNumber { get; set; } = string.Empty;
-        }
-
         [HttpPost("add-user")]
         public async Task<IActionResult> AddUser([FromBody] AddUserRequest request)
         {
@@ -106,13 +100,6 @@ namespace ConstantTalk.Server.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { user.Id });
-        }
-
-        public class AddServiceRequest
-        {
-            public string Name { get; set; } = string.Empty;
-            public decimal Price { get; set; }
-            public string Description { get; set; } = string.Empty;
         }
 
         [HttpPost("add-service")]

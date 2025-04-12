@@ -19,20 +19,13 @@ namespace ConstantTalk.Server.Controllers
             _context = context;
         }
 
-        public class SubscriberDto
-        {
-            public Guid Id { get; set; }
-            public string Name { get; set; } = string.Empty;
-            public string PhoneNumber { get; set; } = string.Empty;
-            public string Email { get; set; } = string.Empty;
-            public bool IsBlocked { get; set; }
-        }
-
         private string? GetAuth0Id() => User.FindFirstValue("sub");
 
         private async Task<Subscriber?> GetCurrentSubscriberAsync()
         {
-            var auth0Id = GetAuth0Id();
+            var auth0Id = "auth0|67f0e092d9850d07890c3ae2";
+            //var auth0Id = GetAuth0Id();
+            //Console.WriteLine("Auth0Id: {0}", auth0Id);
             if (auth0Id == null) return null;
             return await _context.Subscribers
                 .Include(s => s.SubscriberServices)
@@ -63,8 +56,13 @@ namespace ConstantTalk.Server.Controllers
 
             var services = await _context.SubscriberServices
                 .Where(ss => ss.SubscriberId == subscriber.Id)
-                .Include(ss => ss.Service)
-                .Select(ss => ss.Service)
+                .Select(ss => new
+                {
+                    ss.Service.Id,
+                    ss.Service.Name,
+                    ss.Service.Description,
+                    ss.Service.Price
+                })
                 .ToListAsync();
 
             return Ok(services);
@@ -76,10 +74,19 @@ namespace ConstantTalk.Server.Controllers
             var subscriber = await GetCurrentSubscriberAsync();
             if (subscriber == null) return Unauthorized();
 
+            if (subscriber.IsBlocked)
+            {
+                return Problem("You are blocked and cannot add new services.", statusCode: 403);
+            }
+
             if (await _context.SubscriberServices.AnyAsync(ss => ss.SubscriberId == subscriber.Id && ss.ServiceId == serviceId))
             {
                 return BadRequest("Service already added");
             }
+
+            var service = await _context.Services.FindAsync(serviceId);
+            if (service == null)
+                return NotFound("Service not found");
 
             var newSubscriberService = new SubscriberService
             {
@@ -88,6 +95,17 @@ namespace ConstantTalk.Server.Controllers
             };
 
             _context.SubscriberServices.Add(newSubscriberService);
+
+            var bill = new Bill
+            {
+                SubscriberId = subscriber.Id,
+                Amount = service.Price,
+                IsPaid = false,
+                Description = $"Service activation: {service.Name}",
+                DueDate = DateTime.UtcNow.AddDays(7)
+            };
+
+            _context.Bills.Add(bill);
             await _context.SaveChangesAsync();
 
             return Ok();
@@ -101,6 +119,14 @@ namespace ConstantTalk.Server.Controllers
 
             var bills = await _context.Bills
                 .Where(b => b.SubscriberId == subscriber.Id)
+                .Select(b => new
+                {
+                    b.Id,
+                    b.Amount,
+                    b.IsPaid,
+                    b.DueDate,
+                    b.Description
+                })
                 .ToListAsync();
 
             return Ok(bills);

@@ -34,6 +34,10 @@ export const getAvailableServices = async (accessToken) => {
       },
     });
   
+    if (res.status === 403) {
+      throw new Error("You are blocked and cannot add new services.");
+    }
+  
     if (!res.ok) {
       throw new Error("Error when activating service");
     }

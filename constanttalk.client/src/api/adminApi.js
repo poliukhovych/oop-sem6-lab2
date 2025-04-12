@@ -51,13 +51,15 @@ export const getUsers = async (accessToken) => {
       throw new Error("Failed to unblock user");
     }
   };
-  // TODO
-  export const addUser = async (name, phoneNumber, accessToken) => {
-    const res = await fetch(`http://localhost:5098/api/admin/add-user/${name}/${phoneNumber}`, {
+
+  export const addUser = async (name, phoneNumber, email, accessToken) => {
+    const res = await fetch(`http://localhost:5098/api/admin/add-user`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({ name, phoneNumber, email }),
     });
   
     if (!res.ok) {
@@ -66,3 +68,4 @@ export const getUsers = async (accessToken) => {
   
     return res.json();
   };
+  
