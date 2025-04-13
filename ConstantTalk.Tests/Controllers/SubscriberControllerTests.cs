@@ -1,6 +1,7 @@
 using ConstantTalk.Server.Controllers;
 using ConstantTalk.Server.Data;
 using ConstantTalk.Server.Models;
+using ConstantTalk.Server.Models.DTOs;
 using ConstantTalk.Tests.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -69,7 +70,7 @@ namespace ConstantTalk.Tests.Controllers
             var controller = GetControllerWithUser(context, auth0Id);
             var result = await controller.GetMyServices() as OkObjectResult;
 
-            var services = Assert.IsType<List<Service>>(result!.Value);
+            var services = Assert.IsType<List<ServiceDto>>(result!.Value);
             Assert.Single(services);
             Assert.Equal("A", services[0].Name);
         }
@@ -129,7 +130,7 @@ namespace ConstantTalk.Tests.Controllers
             var controller = GetControllerWithUser(context, auth0Id);
             var result = await controller.GetMyBills() as OkObjectResult;
 
-            var bills = Assert.IsType<List<Bill>>(result!.Value);
+            var bills = Assert.IsType<List<BillDto>>(result!.Value);
             Assert.Equal(2, bills.Count);
         }
 

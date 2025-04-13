@@ -4,7 +4,7 @@ import LandingPage from "./pages/LandingPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserDashboard from "./pages/UserDashboard";
 import Unauthorized from "./pages/Unauthorized";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -16,13 +16,15 @@ const App = () => {
         <Route path="/login" element={<LandingPage />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
-        <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-          <Route path="/admin" element={<AdminDashboard />} />
-        </Route>
+        <Route
+          path="/admin"
+          element={<ProtectedRoute component={AdminDashboard} allowedRoles={["admin"]} />}
+        />
 
-        <Route element={<ProtectedRoute allowedRoles={["subscriber"]} />}>
-          <Route path="/subscriber" element={<UserDashboard />} />
-        </Route>
+        <Route
+          path="/subscriber"
+          element={<ProtectedRoute component={UserDashboard} allowedRoles={["subscriber"]} />}
+        />
       </Routes>
       <ToastContainer />
     </Router>

@@ -26,7 +26,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidAudience = auth0Settings.Audience,
             ValidateLifetime = true,
-            //RoleClaimType = "https://constanttalk777/api/roles"
+            RoleClaimType = "https://constanttalk777/api/roles"
         };
     });
 

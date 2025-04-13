@@ -10,7 +10,7 @@ namespace ConstantTalk.Server.Controllers
 {
     [ApiController]
     [Route("api/admin")]
-    //[Authorize(Roles = "admin")]
+    [Authorize(Policy = "AdminOnly")]
     public class AdminController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -27,6 +27,7 @@ namespace ConstantTalk.Server.Controllers
                 .Select(s => new
                 {
                     s.Id,
+                    //s.Auth0Id,
                     s.Name,
                     s.Email,
                     s.PhoneNumber,
@@ -91,6 +92,7 @@ namespace ConstantTalk.Server.Controllers
         {
             var user = new Subscriber
             {
+                Auth0Id = request.Auth0Id,
                 Name = request.Name,
                 Email = request.Email,
                 PhoneNumber = request.PhoneNumber
@@ -116,6 +118,23 @@ namespace ConstantTalk.Server.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { service.Id });
+        }
+
+        [HttpDelete("delete-service/{serviceId:guid}")]
+        public async Task<IActionResult> DeleteService(Guid serviceId)
+        {
+            var service = await _context.Services.FindAsync(serviceId);
+            if (service == null)
+                return NotFound("Service not found");
+
+            var isUsed = await _context.SubscriberServices.AnyAsync(ss => ss.ServiceId == serviceId);
+            if (isUsed)
+                return BadRequest("Cannot delete service that is currently in use by subscribers");
+
+            _context.Services.Remove(service);
+            await _context.SaveChangesAsync();
+
+            return Ok();
         }
     }
 }

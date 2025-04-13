@@ -52,14 +52,14 @@ export const getUsers = async (accessToken) => {
     }
   };
 
-  export const addUser = async (name, phoneNumber, email, accessToken) => {
+  export const addUser = async (auth0Id, name, phoneNumber, email, accessToken) => {
     const res = await fetch(`http://localhost:5098/api/admin/add-user`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, phoneNumber, email }),
+      body: JSON.stringify({ auth0Id, name, phoneNumber, email }),
     });
   
     if (!res.ok) {

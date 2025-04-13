@@ -22,6 +22,7 @@ namespace ConstantTalk.Tests.Helpers
         {
             var claims = new List<Claim>
             {
+                new Claim(ClaimTypes.NameIdentifier, auth0Id),
                 new Claim("sub", auth0Id)
             };
             return new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuthType"));

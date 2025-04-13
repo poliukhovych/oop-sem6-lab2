@@ -30,10 +30,10 @@ function AdminDashboard() {
     setLoading(false);
   };
 
-  const handleAddUser = async (name, phoneNumber, email) => {
+  const handleAddUser = async (auth0Id, name, phoneNumber, email) => {
     try {
       const accessToken = await getAccessTokenSilently();
-      await addUser(name, phoneNumber, email, accessToken);
+      await addUser(auth0Id, name, phoneNumber, email, accessToken);
       fetchData();
     } catch (error) {
       console.error("Error adding subscriber:", error);

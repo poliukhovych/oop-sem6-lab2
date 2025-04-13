@@ -1,5 +1,6 @@
 using ConstantTalk.Server.Data;
 using ConstantTalk.Server.Models;
+using ConstantTalk.Server.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace ConstantTalk.Server.Controllers
 {
     [ApiController]
     [Route("api/subscriber")]
-    //[Authorize(Roles = "subscriber")]
+    [Authorize(Policy = "SubscriberOnly")]
     public class SubscriberController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -19,12 +20,11 @@ namespace ConstantTalk.Server.Controllers
             _context = context;
         }
 
-        private string? GetAuth0Id() => User.FindFirstValue("sub");
+        private string? GetAuth0Id() => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         private async Task<Subscriber?> GetCurrentSubscriberAsync()
         {
-            var auth0Id = "auth0|67f0e092d9850d07890c3ae2";
-            //var auth0Id = GetAuth0Id();
+            var auth0Id = GetAuth0Id();
             //Console.WriteLine("Auth0Id: {0}", auth0Id);
             if (auth0Id == null) return null;
             return await _context.Subscribers
@@ -54,16 +54,21 @@ namespace ConstantTalk.Server.Controllers
             var subscriber = await GetCurrentSubscriberAsync();
             if (subscriber == null) return Unauthorized();
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8601 // Possible null reference assignment.
             var services = await _context.SubscriberServices
                 .Where(ss => ss.SubscriberId == subscriber.Id)
-                .Select(ss => new
+                .Include(ss => ss.Service)
+                .Select(ss => new ServiceDto
                 {
-                    ss.Service.Id,
-                    ss.Service.Name,
-                    ss.Service.Description,
-                    ss.Service.Price
+                    Id = ss.Service.Id,
+                    Name = ss.Service.Name,
+                    Description = ss.Service.Description,
+                    Price = ss.Service.Price
                 })
                 .ToListAsync();
+#pragma warning restore CS8601 // Possible null reference assignment.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
             return Ok(services);
         }
@@ -117,17 +122,19 @@ namespace ConstantTalk.Server.Controllers
             var subscriber = await GetCurrentSubscriberAsync();
             if (subscriber == null) return Unauthorized();
 
+#pragma warning disable CS8601 // Possible null reference assignment.
             var bills = await _context.Bills
                 .Where(b => b.SubscriberId == subscriber.Id)
-                .Select(b => new
+                .Select(b => new BillDto
                 {
-                    b.Id,
-                    b.Amount,
-                    b.IsPaid,
-                    b.DueDate,
-                    b.Description
+                    Id = b.Id,
+                    Amount = b.Amount,
+                    IsPaid = b.IsPaid,
+                    DueDate = b.DueDate,
+                    Description = b.Description
                 })
                 .ToListAsync();
+#pragma warning restore CS8601 // Possible null reference assignment.
 
             return Ok(bills);
         }
